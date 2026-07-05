@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import UserNotifications
 
 @main
 struct ImpulseApp: App {
@@ -24,6 +25,11 @@ struct ImpulseApp: App {
             fatalError("Could not create ModelContainer: \(error)")
         }
     }()
+
+    init() {
+        // So taps on delivered notifications reach NotificationManager.
+        UNUserNotificationCenter.current().delegate = NotificationManager.shared
+    }
 
     var body: some Scene {
         WindowGroup {

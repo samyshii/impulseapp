@@ -18,6 +18,10 @@ enum ItemStatus: String, Codable {
 
 @Model
 final class ShelvedItem {
+    // A stable ID that survives across app launches, so a scheduled
+    // notification can find its way back to this exact item later.
+    var id: UUID
+
     // What the item is called, e.g. "Noise-cancelling headphones".
     var name: String
 
@@ -47,6 +51,7 @@ final class ShelvedItem {
     var decidedAt: Date?
 
     init(
+        id: UUID = UUID(),
         name: String,
         price: Decimal,
         photoData: Data? = nil,
@@ -57,6 +62,7 @@ final class ShelvedItem {
         status: ItemStatus = .waiting,
         decidedAt: Date? = nil
     ) {
+        self.id = id
         self.name = name
         self.price = price
         self.photoData = photoData

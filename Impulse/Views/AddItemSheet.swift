@@ -179,6 +179,11 @@ struct AddItemSheet: View {
     }
 
     private func save() {
+        // Checked before inserting: is this the very first item the user
+        // has ever shelved? If so, the pre-permission screen should show
+        // right after this sheet closes.
+        let isFirstItemEver = !UserDefaults.standard.bool(forKey: "hasShelvedFirstItem")
+
         let item = ShelvedItem(
             name: name.trimmingCharacters(in: .whitespacesAndNewlines),
             price: price,
@@ -192,6 +197,14 @@ struct AddItemSheet: View {
         }
 
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
+
+        // Schedules (or re-groups) this item's Decision Time notification.
+        NotificationScheduler.reconcileAll(context: modelContext)
+
+        if isFirstItemEver {
+            UserDefaults.standard.set(true, forKey: "hasShelvedFirstItem")
+            UserDefaults.standard.set(true, forKey: "shouldShowNotificationPrePrompt")
+        }
 
         dismiss()
     }
@@ -214,7 +227,7 @@ private enum CooldownOption: CaseIterable, Identifiable {
 
     var duration: TimeInterval {
         switch self {
-        case .oneHour: return 60 * 60
+        case .oneHour: return 10 // TEMP: was 60 * 60, shortened for testing — revert before real use
         case .oneDay: return 60 * 60 * 24
         case .threeDays: return 60 * 60 * 24 * 3
         case .sevenDays: return 60 * 60 * 24 * 7

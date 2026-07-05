@@ -24,6 +24,15 @@ struct ShelfView: View {
     // The item currently open in the decision flow, if any.
     @State private var decidingItem: ShelvedItem?
 
+    // Set by AddItemSheet right after the very first item ever gets
+    // shelved; when true, the friendly pre-permission screen should
+    // show once the add-item sheet finishes dismissing.
+    @AppStorage("shouldShowNotificationPrePrompt") private var shouldShowPrePrompt = false
+    @State private var isShowingPrePermission = false
+
+    // Watches for a notification tap that points at a specific item.
+    @ObservedObject private var notificationRouter = NotificationRouter.shared
+
     // Only items still waiting on a decision belong on the shelf.
     // Items whose cooldown has already ended float to the very top.
     private var shelfItems: [ShelvedItem] {
@@ -59,11 +68,28 @@ struct ShelfView: View {
         .onReceive(timer) { tick in
             now = tick
         }
-        .sheet(isPresented: $isShowingAddItem) {
+        .sheet(isPresented: $isShowingAddItem, onDismiss: {
+            if shouldShowPrePrompt {
+                isShowingPrePermission = true
+            }
+        }) {
             AddItemSheet()
         }
         .fullScreenCover(item: $decidingItem) { item in
             DecisionFlowView(item: item)
+        }
+        .fullScreenCover(isPresented: $isShowingPrePermission) {
+            PrePermissionView {
+                shouldShowPrePrompt = false
+                isShowingPrePermission = false
+            }
+        }
+        .onChange(of: notificationRouter.destination) { _, newValue in
+            guard case .decisionItem(let id) = newValue else { return }
+            if let match = allItems.first(where: { $0.id == id }) {
+                decidingItem = match
+            }
+            notificationRouter.destination = nil
         }
     }
 

@@ -16,6 +16,10 @@ struct DecisionFlowView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Query private var goals: [Goal]
+
+    @AppStorage("notificationsEnabled") private var notificationsEnabled = true
+    @AppStorage("notifyMilestones") private var notifyMilestones = true
 
     @State private var stage: Stage = .asking
     @State private var savedTotalAfter: Decimal = 0
@@ -113,17 +117,37 @@ struct DecisionFlowView: View {
     private func buyGuiltFree() {
         item.status = .bought
         item.decidedAt = .now
+
+        // Buying still counts as "activity" for the weekly recap.
+        NotificationScheduler.reconcileAll(context: modelContext)
+
         stage = .bought
     }
 
     private func letGo() {
+        // Captured before this decision changes anything, so we know
+        // whether this win is truly the user's first one ever.
+        let priorLetGoCount = (try? modelContext.fetch(FetchDescriptor<ShelvedItem>()))?
+            .filter { $0.status == .letGo }.count ?? 0
+        let isFirstWinEver = priorLetGoCount == 0
+
         item.status = .letGo
         item.decidedAt = .now
 
         let statsManager = StatsManager(modelContext: modelContext)
-        displayedTotal = statsManager.currentStats().totalSaved
+        let totalBefore = statsManager.currentStats().totalSaved
+        displayedTotal = totalBefore
         statsManager.addWin(price: item.price)
         savedTotalAfter = statsManager.currentStats().totalSaved
+
+        MilestoneNotifier.checkAndNotify(
+            isFirstWinEver: isFirstWinEver,
+            totalBefore: totalBefore,
+            totalAfter: savedTotalAfter,
+            goal: goals.first,
+            enabled: notificationsEnabled && notifyMilestones
+        )
+        NotificationScheduler.reconcileAll(context: modelContext)
 
         stage = .celebrating
         UINotificationFeedbackGenerator().notificationOccurred(.success)
