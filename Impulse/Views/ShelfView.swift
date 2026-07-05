@@ -21,6 +21,9 @@ struct ShelfView: View {
     // Controls the "Shelve it" add-item sheet.
     @State private var isShowingAddItem = false
 
+    // The item currently open in the decision flow, if any.
+    @State private var decidingItem: ShelvedItem?
+
     // Only items still waiting on a decision belong on the shelf.
     // Items whose cooldown has already ended float to the very top.
     private var shelfItems: [ShelvedItem] {
@@ -59,6 +62,9 @@ struct ShelfView: View {
         .sheet(isPresented: $isShowingAddItem) {
             AddItemSheet()
         }
+        .fullScreenCover(item: $decidingItem) { item in
+            DecisionFlowView(item: item)
+        }
     }
 
     // A friendly, time-of-day-aware header shown above everything else.
@@ -89,6 +95,12 @@ struct ShelfView: View {
             LazyVStack(spacing: 12) {
                 ForEach(shelfItems) { item in
                     ShelvedItemCard(item: item, now: now)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            if item.cooldownEndsAt <= now {
+                                decidingItem = item
+                            }
+                        }
                 }
             }
             .padding(.horizontal)
