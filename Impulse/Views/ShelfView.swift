@@ -18,6 +18,9 @@ struct ShelfView: View {
     @State private var now: Date = .now
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
+    // Controls the "Shelve it" add-item sheet.
+    @State private var isShowingAddItem = false
+
     // Only items still waiting on a decision belong on the shelf.
     // Items whose cooldown has already ended float to the very top.
     private var shelfItems: [ShelvedItem] {
@@ -52,6 +55,9 @@ struct ShelfView: View {
         }
         .onReceive(timer) { tick in
             now = tick
+        }
+        .sheet(isPresented: $isShowingAddItem) {
+            AddItemSheet()
         }
     }
 
@@ -108,10 +114,9 @@ struct ShelfView: View {
     }
 
     // The floating "add" button, pinned to the bottom-right corner.
-    // Doesn't do anything yet — the add-item form comes next.
     private var shelveButton: some View {
         Button {
-            // Will open the add-item form once it exists.
+            isShowingAddItem = true
         } label: {
             Label("Shelve it", systemImage: "plus")
                 .font(.headline)
