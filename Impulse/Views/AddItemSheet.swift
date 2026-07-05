@@ -81,33 +81,50 @@ struct AddItemSheet: View {
             Text("Photo (optional)")
                 .font(.headline)
 
-            PhotosPicker(selection: $selectedPhotoItem, matching: .images) {
-                if let data = selectedPhotoData, let uiImage = UIImage(data: data) {
-                    Image(uiImage: uiImage)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 88, height: 88)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                } else {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.secondary.opacity(0.15))
+            ZStack(alignment: .topTrailing) {
+                PhotosPicker(selection: $selectedPhotoItem, matching: .images) {
+                    if let data = selectedPhotoData, let uiImage = UIImage(data: data) {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .scaledToFill()
                             .frame(width: 88, height: 88)
-                        VStack(spacing: 4) {
-                            Image(systemName: "photo.badge.plus")
-                                .font(.title2)
-                            Text("Add photo")
-                                .font(.caption2)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                    } else {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.secondary.opacity(0.15))
+                                .frame(width: 88, height: 88)
+                            VStack(spacing: 4) {
+                                Image(systemName: "photo.badge.plus")
+                                    .font(.title2)
+                                Text("Add photo")
+                                    .font(.caption2)
+                            }
+                            .foregroundStyle(.secondary)
                         }
-                        .foregroundStyle(.secondary)
                     }
                 }
-            }
-            .onChange(of: selectedPhotoItem) { _, newItem in
-                Task {
-                    if let data = try? await newItem?.loadTransferable(type: Data.self) {
-                        selectedPhotoData = data
+                .onChange(of: selectedPhotoItem) { _, newItem in
+                    Task {
+                        if let data = try? await newItem?.loadTransferable(type: Data.self) {
+                            selectedPhotoData = data
+                        }
                     }
+                }
+
+                // Lets the user back out of a photo they already picked,
+                // so a photo is never stuck once chosen.
+                if selectedPhotoData != nil {
+                    Button {
+                        selectedPhotoItem = nil
+                        selectedPhotoData = nil
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .symbolRenderingMode(.palette)
+                            .foregroundStyle(.white, .black.opacity(0.6))
+                            .font(.title3)
+                    }
+                    .offset(x: 6, y: -6)
                 }
             }
         }
