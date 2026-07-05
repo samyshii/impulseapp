@@ -2,7 +2,9 @@
 //  ContentView.swift
 //  Impulse
 //
-//  Created by Sam S on 2026-07-04.
+//  Temporary screen just to prove the data models save and load
+//  correctly. This will be replaced by the real "shelf" screen once
+//  we build the actual add-item and cooldown flow.
 //
 
 import SwiftUI
@@ -10,42 +12,46 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
+    @Query(sort: \ShelvedItem.createdAt, order: .reverse) private var items: [ShelvedItem]
 
     var body: some View {
-        NavigationViewWrapper {
+        NavigationStack {
             List {
                 ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
+                    VStack(alignment: .leading) {
+                        Text(item.name)
+                            .font(.headline)
+                        Text("\(item.price.formatted(.currency(code: "USD"))) — \(item.status.rawValue)")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
                     }
                 }
                 .onDelete(perform: deleteItems)
             }
-#if os(macOS)
-            .navigationSplitViewColumnWidth(min: 180, ideal: 200)
-#endif
+            .navigationTitle("Impulse")
             .toolbar {
-#if os(iOS)
                 ToolbarItem(placement: .navigationBarTrailing) {
                     EditButton()
                 }
-#endif
                 ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
+                    Button(action: addTestItem) {
+                        Label("Add Test Item", systemImage: "plus")
                     }
                 }
             }
         }
     }
 
-    private func addItem() {
+    // Creates a sample shelved item so we can see the models working
+    // on screen. The real "add item" screen comes in a later step.
+    private func addTestItem() {
         withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
+            let item = ShelvedItem(
+                name: "Test Item \(items.count + 1)",
+                price: 19.99,
+                cooldownEndsAt: Calendar.current.date(byAdding: .minute, value: 1, to: .now) ?? .now
+            )
+            modelContext.insert(item)
         }
     }
 
@@ -58,23 +64,7 @@ struct ContentView: View {
     }
 }
 
-fileprivate struct NavigationViewWrapper<Content: View>: View {
-    let content: () -> Content
-
-    var body: some View {
-#if os(macOS)
-        NavigationSplitView {
-            content()
-        } detail: {
-            Text("Select an item")
-        }
-#else
-        content()
-#endif
-    }
-}
-
 #Preview {
     ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
+        .modelContainer(for: [ShelvedItem.self, Goal.self, AppStats.self], inMemory: true)
 }

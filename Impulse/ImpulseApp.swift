@@ -12,7 +12,9 @@ import SwiftData
 struct ImpulseApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            ShelvedItem.self,
+            Goal.self,
+            AppStats.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
