@@ -2,8 +2,9 @@
 //  SetGoalSheet.swift
 //  Impulse
 //
-//  A small form for creating the one savings goal shown on the Wins
-//  tab. Opened from the "set a goal" prompt when none exists yet.
+//  A small form for creating or editing the one savings goal. Used
+//  both by the Wins tab's "set a goal" prompt (no goalToEdit) and by
+//  Settings' "Edit Goal" row (goalToEdit set to the existing goal).
 //
 
 import SwiftUI
@@ -13,10 +14,20 @@ struct SetGoalSheet: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
-    @State private var name = ""
-    @State private var targetAmount: Decimal = 0
+    // When set, editing this goal in place; otherwise a new goal is
+    // created on save.
+    private var goalToEdit: Goal?
+
+    @State private var name: String
+    @State private var targetAmount: Decimal
 
     @FocusState private var isNameFieldFocused: Bool
+
+    init(goalToEdit: Goal? = nil) {
+        self.goalToEdit = goalToEdit
+        _name = State(initialValue: goalToEdit?.name ?? "")
+        _targetAmount = State(initialValue: goalToEdit?.targetAmount ?? 0)
+    }
 
     private var canSave: Bool {
         !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && targetAmount > 0
@@ -44,7 +55,7 @@ struct SetGoalSheet: View {
                 Spacer()
 
                 Button(action: save) {
-                    Text("Set Goal")
+                    Text(goalToEdit == nil ? "Set Goal" : "Save Changes")
                         .font(.headline)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
@@ -55,7 +66,7 @@ struct SetGoalSheet: View {
                 .disabled(!canSave)
             }
             .padding()
-            .navigationTitle("New Goal")
+            .navigationTitle(goalToEdit == nil ? "New Goal" : "Edit Goal")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -71,11 +82,16 @@ struct SetGoalSheet: View {
     }
 
     private func save() {
-        let goal = Goal(
-            name: name.trimmingCharacters(in: .whitespacesAndNewlines),
-            targetAmount: targetAmount
-        )
-        modelContext.insert(goal)
+        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        if let goalToEdit {
+            goalToEdit.name = trimmedName
+            goalToEdit.targetAmount = targetAmount
+        } else {
+            let goal = Goal(name: trimmedName, targetAmount: targetAmount)
+            modelContext.insert(goal)
+        }
+
         dismiss()
     }
 }
