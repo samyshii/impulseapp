@@ -28,6 +28,7 @@ struct DecisionFlowView: View {
 
     @State private var shareImage: UIImage?
     @State private var isShowingShareSheet = false
+    @State private var isShowingShareError = false
 
     private enum Stage {
         case asking
@@ -271,6 +272,9 @@ struct DecisionFlowView: View {
                 ActivityShareSheet(items: [shareImage])
             }
         }
+        .alert("Couldn't create the share image", isPresented: $isShowingShareError) {
+            Button("OK", role: .cancel) {}
+        }
     }
 
     private func shareWin() {
@@ -280,7 +284,11 @@ struct DecisionFlowView: View {
             totalSaved: savedTotalAfter,
             weeklyStreak: streakAfter
         )
-        shareImage = ShareCardRenderer.render(data)
+        guard let image = ShareCardRenderer.render(data) else {
+            isShowingShareError = true
+            return
+        }
+        shareImage = image
         isShowingShareSheet = true
     }
 }

@@ -16,6 +16,7 @@ struct WeeklyRecapView: View {
     @State private var currentPage = 0
     @State private var shareImage: UIImage?
     @State private var isShowingShareSheet = false
+    @State private var isShowingShareError = false
 
     var body: some View {
         TabView(selection: $currentPage) {
@@ -41,6 +42,9 @@ struct WeeklyRecapView: View {
                 ActivityShareSheet(items: [shareImage])
             }
         }
+        .alert("Couldn't create the share image", isPresented: $isShowingShareError) {
+            Button("OK", role: .cancel) {}
+        }
     }
 
     // Shares the week's best win if there was one, otherwise falls back
@@ -53,7 +57,11 @@ struct WeeklyRecapView: View {
             totalSaved: data.allTimeTotalSaved,
             weeklyStreak: data.currentStreak
         )
-        shareImage = ShareCardRenderer.render(cardData)
+        guard let image = ShareCardRenderer.render(cardData) else {
+            isShowingShareError = true
+            return
+        }
+        shareImage = image
         isShowingShareSheet = true
     }
 }
