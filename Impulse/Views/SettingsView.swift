@@ -36,6 +36,8 @@ struct SettingsView: View {
     #if DEBUG
     @AppStorage("debugUseFastTestCooldowns") private var debugUseFastTestCooldowns = false
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = true
+    @State private var isShowingWeeklyRecapPreview = false
+    @State private var weeklyRecapPreviewData: WeeklyRecapData?
     #endif
 
     private let weekdaySymbols = Calendar.current.weekdaySymbols
@@ -257,10 +259,23 @@ struct SettingsView: View {
                     hasCompletedOnboarding = false
                 }
             }
+            Button("Preview Weekly Recap") {
+                let weekStart = Calendar.current.dateInterval(of: .weekOfYear, for: .now)?.start ?? .now
+                let weekEnd = Calendar.current.dateInterval(of: .weekOfYear, for: .now)?.end ?? .now
+                weeklyRecapPreviewData = WeeklyRecapData.compute(context: modelContext, from: weekStart, to: weekEnd)
+                isShowingWeeklyRecapPreview = true
+            }
         } header: {
             Text("Debug")
         } footer: {
-            Text("Testing only. \"Bypass quiet hours\" fires notifications at their real computed time even between 9pm and 9am. \"Fast test cooldowns\" makes any item shelved from now on ready in 10 seconds, no matter which cooldown button you tap — existing shelved items aren't affected. \"Reset onboarding\" shows the welcome flow again immediately, without deleting any of your data.")
+            Text("Testing only. \"Bypass quiet hours\" fires notifications at their real computed time even between 9pm and 9am. \"Fast test cooldowns\" makes any item shelved from now on ready in 10 seconds, no matter which cooldown button you tap — existing shelved items aren't affected. \"Reset onboarding\" shows the welcome flow again immediately, without deleting any of your data. \"Preview Weekly Recap\" opens the recap screen right now using this week's real data so far, regardless of what day it is.")
+        }
+        .fullScreenCover(isPresented: $isShowingWeeklyRecapPreview) {
+            if let weeklyRecapPreviewData {
+                WeeklyRecapView(data: weeklyRecapPreviewData) {
+                    isShowingWeeklyRecapPreview = false
+                }
+            }
         }
     }
 

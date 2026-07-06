@@ -20,6 +20,10 @@ struct MainTabView: View {
     // Watches for notification taps so we know where to navigate.
     @ObservedObject private var notificationRouter = NotificationRouter.shared
 
+    // The full-screen Weekly Recap, shown automatically once a week.
+    @State private var isShowingWeeklyRecap = false
+    @State private var weeklyRecapData: WeeklyRecapData?
+
     private enum Tab {
         case shelf, wins, settings
     }
@@ -51,6 +55,12 @@ struct MainTabView: View {
                 // then rebuilds every notification from current data.
                 WinBackScheduler.recordAppOpen()
                 NotificationScheduler.reconcileAll(context: modelContext)
+
+                // If a not-yet-seen week is ready to be recapped, show it.
+                if let data = WeeklyRecapAutoShow.checkForNewRecap(context: modelContext) {
+                    weeklyRecapData = data
+                    isShowingWeeklyRecap = true
+                }
             case .background:
                 // Last chance to make sure everything pending reflects
                 // the latest state before the app is suspended.
@@ -71,6 +81,14 @@ struct MainTabView: View {
                 notificationRouter.destination = nil
             case .none:
                 break
+            }
+        }
+        .fullScreenCover(isPresented: $isShowingWeeklyRecap) {
+            if let weeklyRecapData {
+                WeeklyRecapView(data: weeklyRecapData) {
+                    isShowingWeeklyRecap = false
+                    selectedTab = .wins
+                }
             }
         }
     }
