@@ -45,9 +45,9 @@ struct WeeklyRecapView: View {
                 WeeklyRecapEmptyState(onDone: onDone)
             }
         }
-        .sheet(isPresented: $isShowingShareSheet) {
+        .background {
             if let shareImage {
-                ActivityShareSheet(items: [shareImage])
+                ActivityShareSheet(isPresented: $isShowingShareSheet, items: [shareImage])
             }
         }
         .alert("Couldn't create the share image", isPresented: $isShowingShareError) {
