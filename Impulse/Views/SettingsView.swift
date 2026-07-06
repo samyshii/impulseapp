@@ -33,6 +33,10 @@ struct SettingsView: View {
     @State private var isShowingPermissionDeniedAlert = false
     @State private var exportURL: URL?
 
+    #if DEBUG
+    @AppStorage("debugUseFastTestCooldowns") private var debugUseFastTestCooldowns = false
+    #endif
+
     private let weekdaySymbols = Calendar.current.weekdaySymbols
 
     // A Date binding just so DatePicker has something to show/edit; the
@@ -246,10 +250,11 @@ struct SettingsView: View {
     private var debugSection: some View {
         Section {
             Toggle("Bypass quiet hours", isOn: debugBypassQuietHoursBinding)
+            Toggle("Use fast test cooldowns", isOn: $debugUseFastTestCooldowns)
         } header: {
             Text("Debug")
         } footer: {
-            Text("Testing only. While on, notifications fire at their real computed time even between 9pm and 9am, instead of waiting until 9:05am.")
+            Text("Testing only. \"Bypass quiet hours\" fires notifications at their real computed time even between 9pm and 9am. \"Fast test cooldowns\" makes any item shelved from now on ready in 10 seconds, no matter which cooldown button you tap — existing shelved items aren't affected.")
         }
     }
 

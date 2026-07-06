@@ -28,6 +28,18 @@ struct AddItemSheet: View {
         !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && price > 0
     }
 
+    // The cooldown buttons above always show and behave normally — this
+    // only changes the actual timer duration used behind the scenes, and
+    // only in Debug builds with the Settings > Debug toggle turned on.
+    private var cooldownDuration: TimeInterval {
+        #if DEBUG
+        if UserDefaults.standard.bool(forKey: "debugUseFastTestCooldowns") {
+            return 10
+        }
+        #endif
+        return selectedCooldown.duration
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -189,7 +201,7 @@ struct AddItemSheet: View {
             price: price,
             photoData: selectedPhotoData,
             note: note.isEmpty ? nil : note,
-            cooldownEndsAt: .now.addingTimeInterval(selectedCooldown.duration)
+            cooldownEndsAt: .now.addingTimeInterval(cooldownDuration)
         )
 
         withAnimation {
@@ -227,7 +239,7 @@ private enum CooldownOption: CaseIterable, Identifiable {
 
     var duration: TimeInterval {
         switch self {
-        case .oneHour: return 10 // TEMP: was 60 * 60, shortened for testing — revert before real use
+        case .oneHour: return 60 * 60
         case .oneDay: return 60 * 60 * 24
         case .threeDays: return 60 * 60 * 24 * 3
         case .sevenDays: return 60 * 60 * 24 * 7
