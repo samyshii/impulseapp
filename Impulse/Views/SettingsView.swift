@@ -35,6 +35,7 @@ struct SettingsView: View {
 
     #if DEBUG
     @AppStorage("debugUseFastTestCooldowns") private var debugUseFastTestCooldowns = false
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = true
     #endif
 
     private let weekdaySymbols = Calendar.current.weekdaySymbols
@@ -251,10 +252,15 @@ struct SettingsView: View {
         Section {
             Toggle("Bypass quiet hours", isOn: debugBypassQuietHoursBinding)
             Toggle("Use fast test cooldowns", isOn: $debugUseFastTestCooldowns)
+            Button("Reset onboarding") {
+                withAnimation {
+                    hasCompletedOnboarding = false
+                }
+            }
         } header: {
             Text("Debug")
         } footer: {
-            Text("Testing only. \"Bypass quiet hours\" fires notifications at their real computed time even between 9pm and 9am. \"Fast test cooldowns\" makes any item shelved from now on ready in 10 seconds, no matter which cooldown button you tap — existing shelved items aren't affected.")
+            Text("Testing only. \"Bypass quiet hours\" fires notifications at their real computed time even between 9pm and 9am. \"Fast test cooldowns\" makes any item shelved from now on ready in 10 seconds, no matter which cooldown button you tap — existing shelved items aren't affected. \"Reset onboarding\" shows the welcome flow again immediately, without deleting any of your data.")
         }
     }
 

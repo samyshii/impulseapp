@@ -9,6 +9,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct PrePermissionView: View {
     @Environment(\.modelContext) private var modelContext
