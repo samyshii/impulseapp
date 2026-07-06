@@ -14,7 +14,8 @@ struct WeeklyRecapView: View {
     var onDone: () -> Void
 
     @State private var currentPage = 0
-    @State private var isShowingShareComingSoon = false
+    @State private var shareImage: UIImage?
+    @State private var isShowingShareSheet = false
 
     var body: some View {
         TabView(selection: $currentPage) {
@@ -27,7 +28,7 @@ struct WeeklyRecapView: View {
             WeeklyRecapStreakCard(
                 streak: data.currentStreak,
                 shieldAvailable: data.shieldAvailable,
-                onShare: { isShowingShareComingSoon = true },
+                onShare: shareWin,
                 onDone: onDone
             )
             .tag(2)
@@ -35,11 +36,25 @@ struct WeeklyRecapView: View {
         .tabViewStyle(.page(indexDisplayMode: .always))
         .indexViewStyle(.page(backgroundDisplayMode: .always))
         .animation(.easeInOut, value: currentPage)
-        .alert("Sharing is on the way", isPresented: $isShowingShareComingSoon) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text("You'll be able to share your wins in a future update.")
+        .sheet(isPresented: $isShowingShareSheet) {
+            if let shareImage {
+                ActivityShareSheet(items: [shareImage])
+            }
         }
+    }
+
+    // Shares the week's best win if there was one, otherwise falls back
+    // to the week's total — either way, the all-time total and current
+    // streak underneath are always the real, current figures.
+    private func shareWin() {
+        let cardData = ShareCardData(
+            headline: "I didn't buy it",
+            winAmount: data.bestWin?.amount ?? data.totalSaved,
+            totalSaved: data.allTimeTotalSaved,
+            weeklyStreak: data.currentStreak
+        )
+        shareImage = ShareCardRenderer.render(cardData)
+        isShowingShareSheet = true
     }
 }
 
@@ -50,6 +65,7 @@ struct WeeklyRecapView: View {
             bestWin: (name: "Noise-cancelling headphones", amount: 89),
             currentStreak: 4,
             shieldAvailable: true,
+            allTimeTotalSaved: 1842,
             hadActivity: true
         ),
         onDone: {}

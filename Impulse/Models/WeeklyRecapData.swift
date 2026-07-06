@@ -18,6 +18,11 @@ struct WeeklyRecapData {
     let currentStreak: Int
     let shieldAvailable: Bool
 
+    // All-time total saved, ever — separate from `totalSaved` above
+    // (which is just this week). Used by the share card, which always
+    // shows the all-time figure regardless of which win it's sharing.
+    let allTimeTotalSaved: Decimal
+
     // Whether anything happened that week at all (something shelved or
     // decided) — used to decide whether the recap is worth showing
     // automatically. Not used by the Debug preview, which always shows
@@ -46,6 +51,7 @@ struct WeeklyRecapData {
             bestWin: best.map { (name: $0.name, amount: $0.price) },
             currentStreak: stats.currentWeeklyStreak,
             shieldAvailable: !stats.streakShieldUsedThisMonth,
+            allTimeTotalSaved: stats.totalSaved,
             hadActivity: hadActivity
         )
     }

@@ -24,6 +24,10 @@ struct DecisionFlowView: View {
     @State private var stage: Stage = .asking
     @State private var savedTotalAfter: Decimal = 0
     @State private var displayedTotal: Decimal = 0
+    @State private var streakAfter: Int = 0
+
+    @State private var shareImage: UIImage?
+    @State private var isShowingShareSheet = false
 
     private enum Stage {
         case asking
@@ -139,6 +143,7 @@ struct DecisionFlowView: View {
         displayedTotal = totalBefore
         statsManager.addWin(price: item.price)
         savedTotalAfter = statsManager.currentStats().totalSaved
+        streakAfter = statsManager.currentStats().currentWeeklyStreak
 
         MilestoneNotifier.checkAndNotify(
             isFirstWinEver: isFirstWinEver,
@@ -235,19 +240,48 @@ struct DecisionFlowView: View {
                     .font(.system(size: 44, weight: .bold))
             }
             Spacer()
-            Button {
-                dismiss()
-            } label: {
-                Text("Done")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(Color.accentColor)
-                    .foregroundStyle(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
+
+            VStack(spacing: 12) {
+                Button(action: shareWin) {
+                    Label("Share this win", systemImage: "square.and.arrow.up")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(Color.secondary.opacity(0.12))
+                        .foregroundStyle(.primary)
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                }
+
+                Button {
+                    dismiss()
+                } label: {
+                    Text("Done")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(Color.accentColor)
+                        .foregroundStyle(.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                }
             }
         }
         .padding()
+        .sheet(isPresented: $isShowingShareSheet) {
+            if let shareImage {
+                ActivityShareSheet(items: [shareImage])
+            }
+        }
+    }
+
+    private func shareWin() {
+        let data = ShareCardData(
+            headline: "I didn't buy it",
+            winAmount: item.price,
+            totalSaved: savedTotalAfter,
+            weeklyStreak: streakAfter
+        )
+        shareImage = ShareCardRenderer.render(data)
+        isShowingShareSheet = true
     }
 }
 
