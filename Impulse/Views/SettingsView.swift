@@ -69,6 +69,9 @@ struct SettingsView: View {
                 goalSection
                 aboutSection
                 dataSection
+                #if DEBUG
+                debugSection
+                #endif
             }
             .navigationTitle("Settings")
             .sheet(isPresented: $isShowingGoalSheet) {
@@ -236,6 +239,32 @@ struct SettingsView: View {
             }
         }
     }
+
+    #if DEBUG
+    // MARK: - Debug (never shown in a Release/TestFlight/App Store build)
+
+    private var debugSection: some View {
+        Section {
+            Toggle("Bypass quiet hours", isOn: debugBypassQuietHoursBinding)
+        } header: {
+            Text("Debug")
+        } footer: {
+            Text("Testing only. While on, notifications fire at their real computed time even between 9pm and 9am, instead of waiting until 9:05am.")
+        }
+    }
+
+    private var debugBypassQuietHoursBinding: Binding<Bool> {
+        Binding(
+            get: { UserDefaults.standard.bool(forKey: "debugBypassQuietHours") },
+            set: { newValue in
+                UserDefaults.standard.set(newValue, forKey: "debugBypassQuietHours")
+                // Re-run scheduling now so anything already pushed to
+                // 9:05am gets rescheduled at its real, un-adjusted time.
+                NotificationScheduler.reconcileAll(context: modelContext)
+            }
+        )
+    }
+    #endif
 
     private func deleteAllData() {
         try? modelContext.delete(model: ShelvedItem.self)

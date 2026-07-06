@@ -15,6 +15,15 @@ enum QuietHours {
     // If `date` falls inside quiet hours, pushes it to 9:05am instead.
     // Otherwise returns `date` unchanged.
     static func adjust(_ date: Date, calendar: Calendar = .current) -> Date {
+        #if DEBUG
+        // Debug-only escape hatch (see Settings > Debug) so quiet hours
+        // don't get in the way of testing on the Simulator. This whole
+        // block is compiled out of Release/TestFlight/App Store builds.
+        if UserDefaults.standard.bool(forKey: "debugBypassQuietHours") {
+            return date
+        }
+        #endif
+
         let hour = calendar.component(.hour, from: date)
         let isQuiet = hour >= quietStartHour || hour < quietEndHour
         guard isQuiet else { return date }
