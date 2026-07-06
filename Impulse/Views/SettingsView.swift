@@ -95,6 +95,18 @@ struct SettingsView: View {
             .onAppear {
                 exportURL = makeExportFile()
             }
+            #if DEBUG
+            // Attached here at the top level, not down on debugSection's
+            // Section — a fullScreenCover nested inside a Form row can
+            // present with stale/empty content instead of what's current.
+            .fullScreenCover(isPresented: $isShowingWeeklyRecapPreview) {
+                if let weeklyRecapPreviewData {
+                    WeeklyRecapView(data: weeklyRecapPreviewData) {
+                        isShowingWeeklyRecapPreview = false
+                    }
+                }
+            }
+            #endif
         }
     }
 
@@ -269,13 +281,6 @@ struct SettingsView: View {
             Text("Debug")
         } footer: {
             Text("Testing only. \"Bypass quiet hours\" fires notifications at their real computed time even between 9pm and 9am. \"Fast test cooldowns\" makes any item shelved from now on ready in 10 seconds, no matter which cooldown button you tap — existing shelved items aren't affected. \"Reset onboarding\" shows the welcome flow again immediately, without deleting any of your data. \"Preview Weekly Recap\" opens the recap screen right now using this week's real data so far, regardless of what day it is.")
-        }
-        .fullScreenCover(isPresented: $isShowingWeeklyRecapPreview) {
-            if let weeklyRecapPreviewData {
-                WeeklyRecapView(data: weeklyRecapPreviewData) {
-                    isShowingWeeklyRecapPreview = false
-                }
-            }
         }
     }
 

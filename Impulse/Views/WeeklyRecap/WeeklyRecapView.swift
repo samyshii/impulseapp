@@ -19,24 +19,32 @@ struct WeeklyRecapView: View {
     @State private var isShowingShareError = false
 
     var body: some View {
-        TabView(selection: $currentPage) {
-            WeeklyRecapSavedCard(totalSaved: data.totalSaved)
-                .tag(0)
+        Group {
+            if data.hadActivity {
+                TabView(selection: $currentPage) {
+                    WeeklyRecapSavedCard(totalSaved: data.totalSaved)
+                        .tag(0)
 
-            WeeklyRecapBestWinCard(bestWin: data.bestWin)
-                .tag(1)
+                    WeeklyRecapBestWinCard(bestWin: data.bestWin)
+                        .tag(1)
 
-            WeeklyRecapStreakCard(
-                streak: data.currentStreak,
-                shieldAvailable: data.shieldAvailable,
-                onShare: shareWin,
-                onDone: onDone
-            )
-            .tag(2)
+                    WeeklyRecapStreakCard(
+                        streak: data.currentStreak,
+                        shieldAvailable: data.shieldAvailable,
+                        onShare: shareWin,
+                        onDone: onDone
+                    )
+                    .tag(2)
+                }
+                .tabViewStyle(.page(indexDisplayMode: .always))
+                .indexViewStyle(.page(backgroundDisplayMode: .always))
+                .animation(.easeInOut, value: currentPage)
+            } else {
+                // Nothing shelved or decided that week — no cards worth
+                // swiping through, just a clear, friendly heads-up.
+                WeeklyRecapEmptyState(onDone: onDone)
+            }
         }
-        .tabViewStyle(.page(indexDisplayMode: .always))
-        .indexViewStyle(.page(backgroundDisplayMode: .always))
-        .animation(.easeInOut, value: currentPage)
         .sheet(isPresented: $isShowingShareSheet) {
             if let shareImage {
                 ActivityShareSheet(items: [shareImage])
