@@ -34,6 +34,14 @@ struct ImpulseApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()
+                .onOpenURL { url in
+                    // The home screen widget links to "impulse://wins" —
+                    // reuse the same routing notification taps already
+                    // use to land on the Wins tab.
+                    if url.host == "wins" {
+                        NotificationRouter.shared.destination = .wins
+                    }
+                }
         }
         .modelContainer(sharedModelContainer)
     }

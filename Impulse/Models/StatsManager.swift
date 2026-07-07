@@ -9,6 +9,7 @@
 
 import Foundation
 import SwiftData
+import WidgetKit
 
 @MainActor
 final class StatsManager {
@@ -36,6 +37,20 @@ final class StatsManager {
         let stats = currentStats()
         stats.totalSaved += price
         updateStreak(stats: stats, winDate: date)
+        refreshWidget(stats: stats)
+    }
+
+    // Keeps the home screen widget's shared snapshot in sync. This is
+    // the one place stats actually change, so it's the one place that
+    // needs to tell the widget to refresh — no need to sprinkle this
+    // call through every screen that can trigger a win.
+    private func refreshWidget(stats: AppStats) {
+        WidgetSnapshot(
+            totalSaved: stats.totalSaved,
+            currentStreak: stats.currentWeeklyStreak,
+            savedThisWeek: savedThisWeek()
+        ).save()
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     // Adds up how much was saved from items let go during the current
