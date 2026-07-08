@@ -304,9 +304,12 @@ struct SettingsView: View {
         try? modelContext.delete(model: AppStats.self)
 
         // Otherwise the widget would keep showing numbers that no
-        // longer exist anywhere in the app.
-        WidgetSnapshot(totalSaved: 0, currentStreak: 0, savedThisWeek: 0).save()
-        WidgetCenter.shared.reloadAllTimelines()
+        // longer exist anywhere in the app. Off the main actor, same as
+        // StatsManager's refreshWidget — this system call can be slow.
+        Task.detached(priority: .utility) {
+            WidgetSnapshot(totalSaved: 0, currentStreak: 0, savedThisWeek: 0).save()
+            WidgetCenter.shared.reloadAllTimelines()
+        }
     }
 
     // MARK: - Export

@@ -23,7 +23,11 @@ struct WidgetSnapshot: Codable {
 
     private static let defaultsKey = "widgetSnapshot"
 
-    static func load() -> WidgetSnapshot {
+    // Explicitly not tied to the main actor: UserDefaults is thread-safe,
+    // and this needs to be callable from a background task so writing a
+    // snapshot (and nudging WidgetKit to refresh) never has a chance to
+    // block the UI, no matter how slow that turns out to be.
+    nonisolated static func load() -> WidgetSnapshot {
         guard
             let defaults = UserDefaults(suiteName: widgetAppGroupID),
             let data = defaults.data(forKey: defaultsKey),
@@ -34,7 +38,7 @@ struct WidgetSnapshot: Codable {
         return snapshot
     }
 
-    func save() {
+    nonisolated func save() {
         guard
             let defaults = UserDefaults(suiteName: widgetAppGroupID),
             let data = try? JSONEncoder().encode(self)

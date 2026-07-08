@@ -44,13 +44,23 @@ final class StatsManager {
     // the one place stats actually change, so it's the one place that
     // needs to tell the widget to refresh — no need to sprinkle this
     // call through every screen that can trigger a win.
+    //
+    // Done on a detached background task: WidgetCenter.reloadAllTimelines()
+    // talks to a system service over XPC and is known to occasionally take
+    // a noticeable moment (worse on the Simulator) — running it inline on
+    // the main actor would freeze whatever triggered this (e.g. "Let it
+    // go") for however long that takes. The snapshot is plain data
+    // (Decimal/Int), so it's safe to hand across to the background task.
     private func refreshWidget(stats: AppStats) {
-        WidgetSnapshot(
+        let snapshot = WidgetSnapshot(
             totalSaved: stats.totalSaved,
             currentStreak: stats.currentWeeklyStreak,
             savedThisWeek: savedThisWeek()
-        ).save()
-        WidgetCenter.shared.reloadAllTimelines()
+        )
+        Task.detached(priority: .utility) {
+            snapshot.save()
+            WidgetCenter.shared.reloadAllTimelines()
+        }
     }
 
     // Adds up how much was saved from items let go during the current
