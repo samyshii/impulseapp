@@ -48,6 +48,8 @@ struct WeeklyRecapStreakCard: View {
                 Text(streak == 1 ? "1 week streak" : "\(streak) week streak")
                     .font(.system(size: 38, weight: .heavy, design: .rounded))
                     .foregroundStyle(.white)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.5)
 
                 Text(encouragingLine)
                     .font(.body)

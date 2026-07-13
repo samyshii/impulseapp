@@ -70,14 +70,18 @@ final class StatsManager {
         guard let weekStart = calendar.dateInterval(of: .weekOfYear, for: .now)?.start else {
             return 0
         }
-        let descriptor = FetchDescriptor<ShelvedItem>()
-        let allItems = (try? modelContext.fetch(descriptor)) ?? []
-        return allItems
+        // Narrow the fetch to items decided this week or later — ShelvedItem
+        // carries its photo inline, so pulling every item ever shelved just
+        // to add up this week's wins gets slower the longer the shelf's
+        // history gets. (Status is checked after the fetch: SwiftData's
+        // #Predicate can't compare enum cases directly.)
+        let decidedRecentlyPredicate = #Predicate<ShelvedItem> { item in
+            item.decidedAt != nil && item.decidedAt! >= weekStart
+        }
+        let descriptor = FetchDescriptor<ShelvedItem>(predicate: decidedRecentlyPredicate)
+        let items = (try? modelContext.fetch(descriptor)) ?? []
+        return items
             .filter { $0.status == .letGo }
-            .filter { item in
-                guard let decidedAt = item.decidedAt else { return false }
-                return decidedAt >= weekStart
-            }
             .reduce(Decimal(0)) { $0 + $1.price }
     }
 

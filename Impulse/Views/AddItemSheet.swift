@@ -163,6 +163,8 @@ struct AddItemSheet: View {
                     } label: {
                         Text(option.label)
                             .font(.subheadline.weight(.semibold))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.7)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 18)
                             .background(

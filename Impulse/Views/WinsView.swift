@@ -19,7 +19,7 @@ struct WinsView: View {
     private var stats: AppStats? { statsList.first }
     private var goal: Goal? { goals.first }
     private var totalSaved: Decimal { stats?.totalSaved ?? 0 }
-    private var shieldAvailable: Bool { !(stats?.streakShieldUsedThisMonth ?? false) }
+    private var shieldAvailable: Bool { stats?.isShieldAvailable() ?? true }
 
     private var weekStart: Date {
         Calendar.current.dateInterval(of: .weekOfYear, for: .now)?.start ?? .now
@@ -71,6 +71,8 @@ struct WinsView: View {
                 .foregroundStyle(.secondary)
             Text(totalSaved.formatted(.currency(code: "USD")))
                 .font(.system(size: 48, weight: .bold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.5)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 8)
@@ -146,26 +148,43 @@ struct WinsView: View {
     // MARK: - Streak
 
     private var streakCard: some View {
-        HStack(spacing: 16) {
-            HStack(spacing: 8) {
-                Image(systemName: "flame.fill")
-                    .foregroundStyle(.orange)
-                Text("\(stats?.currentWeeklyStreak ?? 0) week streak")
-                    .font(.headline)
+        // ViewThatFits keeps the streak and shield side by side normally,
+        // but drops them onto separate lines once larger accessibility
+        // text sizes make the single row too wide to fit — so nothing
+        // gets clipped or overlaps.
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 16) {
+                streakLabel
+                Spacer()
+                shieldLabel
             }
-
-            Spacer()
-
-            HStack(spacing: 6) {
-                Image(systemName: shieldAvailable ? "shield.fill" : "shield.slash")
-                    .foregroundStyle(shieldAvailable ? .blue : .secondary)
-                Text(shieldAvailable ? "Shield ready" : "Shield used")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+            VStack(alignment: .leading, spacing: 10) {
+                streakLabel
+                shieldLabel
             }
         }
         .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 16))
+    }
+
+    private var streakLabel: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "flame.fill")
+                .foregroundStyle(.orange)
+            Text("\(stats?.currentWeeklyStreak ?? 0) week streak")
+                .font(.headline)
+        }
+    }
+
+    private var shieldLabel: some View {
+        HStack(spacing: 6) {
+            Image(systemName: shieldAvailable ? "shield.fill" : "shield.slash")
+                .foregroundStyle(shieldAvailable ? .blue : .secondary)
+            Text(shieldAvailable ? "Shield ready" : "Shield used")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
     }
 
     // MARK: - This week
@@ -182,12 +201,17 @@ struct WinsView: View {
         VStack(spacing: 4) {
             Text(value)
                 .font(.headline)
+                .lineLimit(1)
+                .minimumScaleFactor(0.5)
             Text(label)
                 .font(.caption2)
                 .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
+        .padding(.horizontal, 4)
         .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
     }
 
@@ -199,10 +223,19 @@ struct WinsView: View {
                 .font(.headline)
 
             if historyItems.isEmpty {
-                Text("Nothing decided yet.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .padding(.vertical, 8)
+                VStack(spacing: 10) {
+                    Image(systemName: "clock.arrow.circlepath")
+                        .font(.title)
+                        .foregroundStyle(.secondary)
+                    Text("No decisions yet")
+                        .font(.subheadline.weight(.medium))
+                    Text("Once a cooldown ends and you decide, every buy and every win shows up here.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 24)
             } else {
                 ForEach(Array(historyItems.enumerated()), id: \.element.id) { index, item in
                     HistoryRow(item: item)

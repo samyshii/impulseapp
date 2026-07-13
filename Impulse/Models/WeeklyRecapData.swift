@@ -31,18 +31,26 @@ struct WeeklyRecapData {
 
     @MainActor
     static func compute(context: ModelContext, from start: Date, to end: Date) -> WeeklyRecapData {
-        let allItems = (try? context.fetch(FetchDescriptor<ShelvedItem>())) ?? []
+        // Only fetch items that actually touch this week (shelved or
+        // decided in [start, end)) instead of every item ever shelved.
+        // ShelvedItem carries its photo inline, so an unfiltered fetch
+        // pulls every photo ever taken off disk just to check a date —
+        // and it only gets slower the longer the shelf's history gets.
+        let thisWeekPredicate = #Predicate<ShelvedItem> { item in
+            (item.createdAt >= start && item.createdAt < end) ||
+            (item.decidedAt != nil && item.decidedAt! >= start && item.decidedAt! < end)
+        }
+        let weekItems = (try? context.fetch(FetchDescriptor(predicate: thisWeekPredicate))) ?? []
 
-        let letGoThisWeek = allItems.filter { item in
+        let letGoThisWeek = weekItems.filter { item in
             item.status == .letGo && (item.decidedAt.map { $0 >= start && $0 < end } ?? false)
         }
         let totalSaved = letGoThisWeek.reduce(Decimal(0)) { $0 + $1.price }
         let best = letGoThisWeek.max { $0.price < $1.price }
 
-        let hadActivity = allItems.contains { item in
-            (item.createdAt >= start && item.createdAt < end) ||
-            (item.decidedAt.map { $0 >= start && $0 < end } ?? false)
-        }
+        // The predicate above already only matches items that were
+        // shelved or decided this week, so a non-empty result *is* activity.
+        let hadActivity = !weekItems.isEmpty
 
         let stats = StatsManager(modelContext: context).currentStats()
 
@@ -50,7 +58,7 @@ struct WeeklyRecapData {
             totalSaved: totalSaved,
             bestWin: best.map { (name: $0.name, amount: $0.price) },
             currentStreak: stats.currentWeeklyStreak,
-            shieldAvailable: !stats.streakShieldUsedThisMonth,
+            shieldAvailable: stats.isShieldAvailable(),
             allTimeTotalSaved: stats.totalSaved,
             hadActivity: hadActivity
         )

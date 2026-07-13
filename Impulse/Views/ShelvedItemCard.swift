@@ -23,10 +23,13 @@ struct ShelvedItemCard: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(item.name)
                     .font(.headline)
+                    .lineLimit(2)
 
                 Text(item.price.formatted(.currency(code: "USD")))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
 
                 if isReady {
                     readyBadge

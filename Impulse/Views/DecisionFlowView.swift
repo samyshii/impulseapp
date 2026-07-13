@@ -50,6 +50,10 @@ struct DecisionFlowView: View {
                 summaryView
             }
         }
+        // The celebration/summary screens don't scroll and carry big
+        // numbers plus action buttons, so cap very large accessibility
+        // sizes to keep everything on screen without overlap.
+        .dynamicTypeSize(...DynamicTypeSize.accessibility2)
     }
 
     // MARK: - Asking
@@ -205,6 +209,8 @@ struct DecisionFlowView: View {
                         .foregroundStyle(.secondary)
                     Text(displayedTotal.formatted(.currency(code: "USD")))
                         .font(.system(size: 44, weight: .bold))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
                         .contentTransition(.numericText(value: (displayedTotal as NSDecimalNumber).doubleValue))
                 }
                 Spacer()
@@ -239,6 +245,8 @@ struct DecisionFlowView: View {
                     .foregroundStyle(.secondary)
                 Text(savedTotalAfter.formatted(.currency(code: "USD")))
                     .font(.system(size: 44, weight: .bold))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.5)
             }
             Spacer()
 

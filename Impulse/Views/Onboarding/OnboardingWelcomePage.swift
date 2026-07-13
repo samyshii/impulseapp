@@ -4,6 +4,10 @@
 //
 //  Onboarding page 1: the core idea in one line.
 //
+//  Styled to the "Cobalt on Paper" direction — near-white page, one blue
+//  ink, a line drawing in the middle. Every value comes from
+//  OnboardingTheme; nothing visual is decided here.
+//
 
 import SwiftUI
 
@@ -11,40 +15,33 @@ struct OnboardingWelcomePage: View {
     var onNext: () -> Void
 
     var body: some View {
-        VStack(spacing: 24) {
-            Spacer()
+        CenteredScrollView {
+            VStack(spacing: 0) {
+                Spacer(minLength: 24)
 
-            Image(systemName: "shippingbox.fill")
-                .font(.system(size: 56))
-                .foregroundStyle(.orange)
+                OnboardingHeadline("Before you buy it, shelve it")
 
-            VStack(spacing: 8) {
-                Text("Before you buy it, shelve it")
-                    .font(.largeTitle.bold())
-                    .multilineTextAlignment(.center)
+                Spacer(minLength: 32)
 
-                Text("Impulses get a cooldown instead of an instant purchase — so you decide with a clear head, not a hot one.")
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
+                OnboardingIllustration(symbol: "shippingbox")
+
+                Spacer(minLength: 32)
+
+                OnboardingBodyText(
+                    "Impulses get a cooldown instead of an instant purchase — so you decide with a clear head, not a hot one."
+                )
+
+                Spacer(minLength: 32)
+
+                OnboardingPageDots(current: 0)
+                    .padding(.bottom, 24)
+
+                OnboardingPrimaryButton(title: "Next", action: onNext)
             }
-            .padding(.horizontal, 24)
-
-            Spacer()
-            Spacer()
-
-            Button(action: onNext) {
-                Text("Next")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(Color.accentColor)
-                    .foregroundStyle(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
-            }
-            .padding(.horizontal)
+            .padding(.horizontal, OnboardingTheme.Metrics.screenPadding)
+            .padding(.bottom, 32)
         }
-        .padding(.bottom, 40)
+        .background(OnboardingTheme.Palette.paper.ignoresSafeArea())
     }
 }
 

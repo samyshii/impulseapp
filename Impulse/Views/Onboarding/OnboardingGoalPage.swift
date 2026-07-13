@@ -5,6 +5,10 @@
 //  Onboarding page 2: an optional first savings goal. Not required —
 //  "Skip for now" moves on without setting one.
 //
+//  Styled to "Cobalt on Paper". The fields, their bindings, the keyboard
+//  type, the focus state and the "can I continue yet?" rule are all
+//  exactly as they were — only the paint changed.
+//
 
 import SwiftUI
 
@@ -21,59 +25,45 @@ struct OnboardingGoalPage: View {
     }
 
     var body: some View {
-        VStack(spacing: 24) {
-            Spacer()
+        CenteredScrollView {
+            VStack(spacing: 0) {
+                Spacer(minLength: 24)
 
-            VStack(spacing: 8) {
-                Text("Set your first goal")
-                    .font(.title.bold())
-                Text("What are you saving toward? You can always change this later.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-            }
-            .padding(.horizontal, 24)
+                OnboardingHeadline("Set your first goal")
 
-            VStack(alignment: .leading, spacing: 16) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("What are you saving for?")
-                        .font(.headline)
-                    TextField("e.g. Concert tickets", text: $goalName)
-                        .textFieldStyle(.roundedBorder)
-                        .focused($isNameFieldFocused)
+                OnboardingBodyText("What are you saving toward? You can always change this later.")
+                    .padding(.top, OnboardingTheme.Metrics.textGap)
+
+                OnboardingIllustration(symbol: "target")
+                    .padding(.top, OnboardingTheme.Metrics.blockGap)
+
+                VStack(alignment: .leading, spacing: 18) {
+                    OnboardingField(label: "What are you saving for?") {
+                        TextField("e.g. Concert tickets", text: $goalName)
+                            .focused($isNameFieldFocused)
+                    }
+
+                    OnboardingField(label: "Target amount") {
+                        TextField("0.00", value: $goalTarget, format: .currency(code: "USD"))
+                            .keyboardType(.decimalPad)
+                    }
                 }
+                .padding(.top, OnboardingTheme.Metrics.blockGap)
 
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Target amount")
-                        .font(.headline)
-                    TextField("0.00", value: $goalTarget, format: .currency(code: "USD"))
-                        .textFieldStyle(.roundedBorder)
-                        .keyboardType(.decimalPad)
-                }
+                Spacer(minLength: 32)
+
+                OnboardingPageDots(current: 1)
+                    .padding(.bottom, 24)
+
+                OnboardingPrimaryButton(title: "Next", isEnabled: canContinue, action: onNext)
+
+                OnboardingSubtleButton(title: "Skip for now", action: onSkip)
+                    .padding(.top, 8)
             }
-            .padding(.horizontal, 24)
-
-            Spacer()
-            Spacer()
-
-            VStack(spacing: 12) {
-                Button(action: onNext) {
-                    Text("Next")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(canContinue ? Color.accentColor : Color.secondary.opacity(0.3))
-                        .foregroundStyle(.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 14))
-                }
-                .disabled(!canContinue)
-
-                Button("Skip for now", action: onSkip)
-                    .foregroundStyle(.secondary)
-            }
-            .padding(.horizontal)
+            .padding(.horizontal, OnboardingTheme.Metrics.screenPadding)
+            .padding(.bottom, 32)
         }
-        .padding(.bottom, 40)
+        .background(OnboardingTheme.Palette.paper.ignoresSafeArea())
     }
 }
 

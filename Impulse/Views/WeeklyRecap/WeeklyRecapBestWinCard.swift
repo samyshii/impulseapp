@@ -41,6 +41,9 @@ struct WeeklyRecapBestWinCard: View {
                     Text(bestWin.amount.formatted(.currency(code: "USD")))
                         .font(.system(size: 40, weight: .heavy, design: .rounded))
                         .foregroundStyle(.white)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
+                        .padding(.horizontal, 24)
                 } else {
                     Image(systemName: "shippingbox")
                         .font(.system(size: 40))

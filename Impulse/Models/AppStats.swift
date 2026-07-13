@@ -37,4 +37,23 @@ final class AppStats {
         self.lastWinDate = lastWinDate
         self.streakShieldUsedThisMonth = streakShieldUsedThisMonth
     }
+
+    // Whether the shield is ACTUALLY available right now — always ask
+    // this rather than reading `streakShieldUsedThisMonth` directly.
+    //
+    // The stored flag is only ever cleared when a win comes in (see
+    // StatsManager.updateStreak). So if the shield was used in, say,
+    // February and the user hasn't won anything since, the flag is still
+    // sitting at `true` all through March — even though a March win
+    // would reset it and the shield really is available again. Reading
+    // the raw flag would tell the user their shield is gone when it
+    // isn't, exactly when they're most anxious about the streak.
+    //
+    // Whenever the flag is true, the shield was used on the most recent
+    // win, so the month of `lastWinDate` is the month it was spent in.
+    // A different month means it's back.
+    func isShieldAvailable(on date: Date = .now, calendar: Calendar = .current) -> Bool {
+        guard streakShieldUsedThisMonth, let lastWinDate else { return true }
+        return !calendar.isDate(lastWinDate, equalTo: date, toGranularity: .month)
+    }
 }

@@ -85,8 +85,9 @@ struct SetGoalSheet: View {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
 
         if let goalToEdit {
-            goalToEdit.name = trimmedName
-            goalToEdit.targetAmount = targetAmount
+            // `update` rather than setting the fields directly, so the
+            // starter boost gets recalculated for the new target.
+            goalToEdit.update(name: trimmedName, targetAmount: targetAmount)
         } else {
             let goal = Goal(name: trimmedName, targetAmount: targetAmount)
             modelContext.insert(goal)

@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		AB0000000000000000000007 /* ImpulseWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = AB0000000000000000000001 /* ImpulseWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		AB0000000000000000000022 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = AB0000000000000000000021 /* RevenueCat */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -40,14 +41,15 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		AB000000000000000000000F /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		AB000000000000000000000F /* Exceptions for "Impulse" folder in "Impulse" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Impulse.storekit,
 				Info.plist,
 			);
 			target = 602462692FF9EFB900B4A437 /* Impulse */;
 		};
-		AB0000000000000000000010 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		AB0000000000000000000010 /* Exceptions for "ImpulseWidget" folder in "ImpulseWidget" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -60,7 +62,7 @@
 		6024626C2FF9EFB900B4A437 /* Impulse */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				AB000000000000000000000F /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
+				AB000000000000000000000F /* Exceptions for "Impulse" folder in "Impulse" target */,
 			);
 			path = Impulse;
 			sourceTree = "<group>";
@@ -68,7 +70,7 @@
 		AB0000000000000000000002 /* ImpulseWidget */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				AB0000000000000000000010 /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
+				AB0000000000000000000010 /* Exceptions for "ImpulseWidget" folder in "ImpulseWidget" target */,
 			);
 			path = ImpulseWidget;
 			sourceTree = "<group>";
@@ -85,6 +87,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AB0000000000000000000022 /* RevenueCat in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -140,6 +143,7 @@
 			);
 			name = Impulse;
 			packageProductDependencies = (
+				AB0000000000000000000021 /* RevenueCat */,
 			);
 			productName = Impulse;
 			productReference = 6024626A2FF9EFB900B4A437 /* Impulse.app */;
@@ -195,6 +199,9 @@
 			);
 			mainGroup = 602462612FF9EFB900B4A437;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				AB0000000000000000000020 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 6024626B2FF9EFB900B4A437 /* Products */;
 			projectDirPath = "";
@@ -512,6 +519,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		AB0000000000000000000020 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios-spm";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.80.3;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		AB0000000000000000000021 /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AB0000000000000000000020 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			productName = RevenueCat;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 602462622FF9EFB900B4A437 /* Project object */;
 }

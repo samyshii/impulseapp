@@ -96,5 +96,6 @@ struct MainTabView: View {
 
 #Preview {
     MainTabView()
+        .environmentObject(SubscriptionManager())
         .modelContainer(for: [ShelvedItem.self, Goal.self, AppStats.self], inMemory: true)
 }

@@ -13,10 +13,11 @@ struct HistoryRow: View {
     let item: ShelvedItem
 
     var body: some View {
-        HStack {
+        HStack(alignment: .firstTextBaseline, spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(item.name)
                     .font(.subheadline.weight(.medium))
+                    .lineLimit(2)
                 if let decidedAt = item.decidedAt {
                     Text(decidedAt.formatted(date: .abbreviated, time: .omitted))
                         .font(.caption)
@@ -24,17 +25,23 @@ struct HistoryRow: View {
                 }
             }
 
-            Spacer()
+            Spacer(minLength: 8)
 
-            if item.status == .letGo {
-                Text("+\(item.price.formatted(.currency(code: "USD")))")
-                    .font(.subheadline.bold())
-                    .foregroundStyle(.green)
-            } else {
-                Text(item.price.formatted(.currency(code: "USD")))
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+            // Keeps the amount fully readable — it never gets truncated to
+            // make room for a long item name.
+            Group {
+                if item.status == .letGo {
+                    Text("+\(item.price.formatted(.currency(code: "USD")))")
+                        .font(.subheadline.bold())
+                        .foregroundStyle(.green)
+                } else {
+                    Text(item.price.formatted(.currency(code: "USD")))
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
             }
+            .lineLimit(1)
+            .fixedSize(horizontal: true, vertical: false)
         }
         .padding(.vertical, 6)
     }

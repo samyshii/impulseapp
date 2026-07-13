@@ -13,6 +13,7 @@ import WidgetKit
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.openURL) private var openURL
+    @EnvironmentObject private var subscriptions: SubscriptionManager
     @Query private var goals: [Goal]
 
     @AppStorage("notificationsEnabled") private var notificationsEnabled = true
@@ -75,6 +76,7 @@ struct SettingsView: View {
             Form {
                 notificationsSection
                 goalSection
+                subscriptionSection
                 aboutSection
                 dataSection
                 #if DEBUG
@@ -214,6 +216,31 @@ struct SettingsView: View {
         }
     }
 
+    // MARK: - Subscription
+
+    // Apple expects "Restore Purchases" to be reachable from inside the
+    // app, not only from the paywall — someone who's already subscribed
+    // never sees the paywall again, so this is their only way back.
+    private var subscriptionSection: some View {
+        Section {
+            HStack {
+                Text("Status")
+                Spacer()
+                Text(subscriptions.hasPremiumAccess ? "Premium" : "Not subscribed")
+                    .foregroundStyle(.secondary)
+            }
+
+            Button("Restore Purchases") {
+                Task { await subscriptions.restore() }
+            }
+            .disabled(subscriptions.isWorking)
+        } header: {
+            Text("Subscription")
+        } footer: {
+            Text("Restores a subscription you've already paid for — after reinstalling, or on a new phone.")
+        }
+    }
+
     // MARK: - About
 
     private var aboutSection: some View {
@@ -224,18 +251,10 @@ struct SettingsView: View {
                 Text(appVersion)
                     .foregroundStyle(.secondary)
             }
-            HStack {
-                Text("Privacy Policy")
-                Spacer()
-                Text("Coming soon")
-                    .foregroundStyle(.secondary)
-            }
-            HStack {
-                Text("Terms of Use")
-                Spacer()
-                Text("Coming soon")
-                    .foregroundStyle(.secondary)
-            }
+            // Placeholder URLs for now — both live in PurchaseConfig, so
+            // swapping them for the real pages is a one-line change there.
+            Link("Privacy Policy", destination: PurchaseConfig.privacyURL)
+            Link("Terms of Use", destination: PurchaseConfig.termsURL)
         }
     }
 
@@ -267,6 +286,7 @@ struct SettingsView: View {
         Section {
             Toggle("Bypass quiet hours", isOn: debugBypassQuietHoursBinding)
             Toggle("Use fast test cooldowns", isOn: $debugUseFastTestCooldowns)
+            Toggle("Bypass paywall", isOn: $subscriptions.debugBypassPaywall)
             Button("Reset onboarding") {
                 withAnimation {
                     hasCompletedOnboarding = false
@@ -281,7 +301,7 @@ struct SettingsView: View {
         } header: {
             Text("Debug")
         } footer: {
-            Text("Testing only. \"Bypass quiet hours\" fires notifications at their real computed time even between 9pm and 9am. \"Fast test cooldowns\" makes any item shelved from now on ready in 10 seconds, no matter which cooldown button you tap — existing shelved items aren't affected. \"Reset onboarding\" shows the welcome flow again immediately, without deleting any of your data. \"Preview Weekly Recap\" opens the recap screen right now using this week's real data so far, regardless of what day it is.")
+            Text("Testing only. \"Bypass quiet hours\" fires notifications at their real computed time even between 9pm and 9am. \"Fast test cooldowns\" makes any item shelved from now on ready in 10 seconds, no matter which cooldown button you tap — existing shelved items aren't affected. \"Bypass paywall\" lets you into the app without subscribing, so a store problem can never lock you out while you're building. \"Reset onboarding\" shows the welcome flow again immediately, without deleting any of your data. \"Preview Weekly Recap\" opens the recap screen right now using this week's real data so far, regardless of what day it is.")
         }
     }
 
@@ -369,5 +389,6 @@ struct SettingsView: View {
 
 #Preview {
     SettingsView()
+        .environmentObject(SubscriptionManager())
         .modelContainer(for: [ShelvedItem.self, Goal.self, AppStats.self], inMemory: true)
 }

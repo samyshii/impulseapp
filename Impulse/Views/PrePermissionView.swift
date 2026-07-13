@@ -19,41 +19,43 @@ struct PrePermissionView: View {
     var onFinished: () -> Void
 
     var body: some View {
-        VStack(spacing: 24) {
-            Spacer()
+        CenteredScrollView {
+            VStack(spacing: 24) {
+                Spacer()
 
-            Image(systemName: "bell.badge.fill")
-                .font(.system(size: 56))
-                .foregroundStyle(.orange)
+                Image(systemName: "bell.badge.fill")
+                    .font(.system(size: 56))
+                    .foregroundStyle(.orange)
 
-            VStack(spacing: 8) {
-                Text("Want a heads-up when this timer ends?")
-                    .font(.title2.bold())
-                    .multilineTextAlignment(.center)
-                Text("That's the whole point of the shelf.")
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-            }
-
-            Spacer()
-
-            VStack(spacing: 12) {
-                Button(action: allow) {
-                    Text("Yes, notify me")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(Color.accentColor)
-                        .foregroundStyle(.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                VStack(spacing: 8) {
+                    Text("Want a heads-up when this timer ends?")
+                        .font(.title2.bold())
+                        .multilineTextAlignment(.center)
+                    Text("That's the whole point of the shelf.")
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
                 }
 
-                Button("Not now", action: onFinished)
-                    .foregroundStyle(.secondary)
+                Spacer()
+
+                VStack(spacing: 12) {
+                    Button(action: allow) {
+                        Text("Yes, notify me")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                            .background(Color.accentColor)
+                            .foregroundStyle(.white)
+                            .clipShape(RoundedRectangle(cornerRadius: 14))
+                    }
+
+                    Button("Not now", action: onFinished)
+                        .foregroundStyle(.secondary)
+                }
             }
+            .padding()
         }
-        .padding()
     }
 
     private func allow() {

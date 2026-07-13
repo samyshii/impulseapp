@@ -40,7 +40,7 @@ enum StreakGuardScheduler {
         var fireDate = QuietHours.adjust(nextSaturday)
         fireDate = NotificationScheduler.nextFreeDay(startingAt: fireDate, reservedDays: &reservedDays)
 
-        let shieldAvailable = !stats.streakShieldUsedThisMonth
+        let shieldAvailable = stats.isShieldAvailable()
         let (title, body) = NotificationCopy.streakGuard(streakWeeks: stats.currentWeeklyStreak, shieldAvailable: shieldAvailable)
 
         NotificationScheduler.cancelPending(identifiers: [identifier])

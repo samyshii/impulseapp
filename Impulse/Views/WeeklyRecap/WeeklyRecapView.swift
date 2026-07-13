@@ -53,6 +53,11 @@ struct WeeklyRecapView: View {
         .alert("Couldn't create the share image", isPresented: $isShowingShareError) {
             Button("OK", role: .cancel) {}
         }
+        // These full-screen recap cards are big, glanceable, and don't
+        // scroll, so we let text grow for larger accessibility sizes but
+        // cap it before the huge numbers and the Done/Share buttons would
+        // start colliding on a small screen.
+        .dynamicTypeSize(...DynamicTypeSize.accessibility2)
     }
 
     // Shares the week's best win if there was one, otherwise falls back

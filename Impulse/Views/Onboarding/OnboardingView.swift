@@ -43,8 +43,14 @@ struct OnboardingView: View {
             OnboardingHowItWorksPage(onStart: finish)
                 .tag(2)
         }
-        .tabViewStyle(.page(indexDisplayMode: .always))
-        .indexViewStyle(.page(backgroundDisplayMode: .always))
+        // The system's dots are hidden because each page now draws its own
+        // (OnboardingPageDots), sitting just above the button where the
+        // eye already is. Swiping between pages still works exactly as before.
+        .tabViewStyle(.page(indexDisplayMode: .never))
+        // A TabView won't let its pages paint under the status bar, which
+        // otherwise leaves a white strip along the top edge. Painting the
+        // paper behind the whole TabView fills it.
+        .background(OnboardingTheme.Palette.paper.ignoresSafeArea())
         .animation(.easeInOut, value: currentPage)
         // Editing the goal fields after skipping means the user changed
         // their mind — un-skip so a valid goal gets created after all.
